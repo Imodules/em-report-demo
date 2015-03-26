@@ -3,13 +3,17 @@
  */
 
 'use strict';
-angular.module('em-reporting').controller('CreateCampaignCtrl', ['$scope', '$stateParams',
-	function($scope, $stateParams){
+angular.module('em-reporting').controller('CreateCampaignCtrl', ['$scope', '$meteor',
+	function($scope, $meteor){
 
-		$scope.campaign = {};
+		$scope.campaigns = $meteor.collection(Campaigns).subscribe('Campaigns');
 
 		$scope.create = function() {
-			console.log($scope.campaign);
+			$scope.campaign.createdAt = new Date();
+			$scope.campaigns.push($scope.campaign).then(function (id) {
+				console.log(id);
+			});
+
 		};
 
 	}]);
