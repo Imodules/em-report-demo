@@ -1,0 +1,18 @@
+<form>
+	<div class="form-group">
+		<label for="campaignName">Campaign Name</label>
+		<input ng-model="campaign.name" type="text" class="form-control" id="campaignName" placeholder="Enter a name for this campaign">
+	</div>
+
+	<div class="form-group">
+		<label for="campaignName">From Email</label>
+		<input ng-model="campaign.fromEmail" type="text" class="form-control" id="fromEmail" placeholder="Enter the email address this is being sent from">
+	</div>
+</form>
+
+<div class="row">
+	<div class="col-xs-12">
+		<button ng-click="create()" class="btn btn-success">Create</button>
+		<a class="btn btn-link">Cancel</a>
+	</div>
+</div>
