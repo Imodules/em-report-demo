@@ -4,3 +4,25 @@
 	</div>
 </div>
 
+<div class="row">
+	<div class="col-xs-12">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Campaign</th>
+					<th>Emails</th>
+					<th>Date</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				<tr ng-repeat="c in campaigns">
+					<td><a href="/campaigns/{{c._id}}">{{c.name}}</a></td>
+					<td>{{c.totalEmails}}</td>
+					<td>{{c.createdAt | date:"medium"}}</td>
+				</tr>
+			</tbody>
+
+		</table>
+	</div>
+</div>

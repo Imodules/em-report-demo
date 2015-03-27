@@ -3,17 +3,19 @@
  */
 
 'use strict';
-angular.module('em-reporting').controller('CreateCampaignCtrl', ['$scope', '$meteor',
-	function($scope, $meteor){
+angular.module('em-reporting').controller('CreateCampaignCtrl', ['$scope', '$meteor', '$location',
+	function($scope, $meteor, $location){
 
 		$scope.campaigns = $meteor.collection(Campaigns).subscribe('Campaigns');
 
 		$scope.create = function() {
-			$scope.campaign.createdAt = new Date();
-			$scope.campaigns.push($scope.campaign).then(function (id) {
-				console.log(id);
+			$scope.campaigns.save($scope.newCa).then(function (res) {
+					console.log('success: ' + res[0]._id);
+						$location.path('/overview');
+			},
+			function (err) {
+				console.log(err);
 			});
-
 		};
 
 	}]);

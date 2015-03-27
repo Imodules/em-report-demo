@@ -1,0 +1,27 @@
+<div class="row">
+	<div class="col-xs-12">
+		<a class="btn btn-link" href="/overview">Back</a>
+	</div>
+</div>
+
+<h2>
+	{{campaign.name}}<br />
+	<small>
+		Sent on {{campaign.createdAt | date:"medium"}}
+	</small>
+</h2>
+
+<div class="row">
+	<div class="col-xs-12">
+		<meteor-include src="lineChart"></meteor-include>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-xs-6">
+		Clicks: {{clicks.length}}
+	</div>
+	<div class="col-xs-6">
+		Opens: {{opens.length}}
+	</div>
+</div>

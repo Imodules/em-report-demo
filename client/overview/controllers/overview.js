@@ -3,8 +3,11 @@
  */
 
 'use strict';
-angular.module('em-reporting').controller('OverviewCtrl', ['$scope', '$stateParams',
-	function($scope, $stateParams){
+angular.module('em-reporting').controller('OverviewCtrl', ['$scope', '$meteor',
+	function($scope, $meteor){
 
+		$scope.campaigns = $meteor.collection(function () {
+			return Campaigns.find({}, {sort: {createdAt: -1}});
+		}).subscribe('Campaigns');
 
 	}]);
