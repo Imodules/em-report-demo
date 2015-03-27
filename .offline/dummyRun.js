@@ -120,6 +120,7 @@ function getMessage(type, idx) {
 	msg.campaignId = campaignId;
 	msg.email = 'email_' + tstring + '@example.com';
 	msg.timestamp = startStamp + (hours * 60 * 60) + (minutes * 60);
+	msg.postHour = hours;
 
 	return msg;
 }

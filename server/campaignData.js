@@ -4,9 +4,9 @@
 
 'use strict';
 Meteor.publish('Opens', function (campaignId) {
-	return Opens.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1}});
+	return Opens.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1, postHour: 1}});
 });
 
 Meteor.publish('Clicks', function (campaignId) {
-	return Clicks.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1}});
+	return Clicks.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1, postHour: 1}});
 });

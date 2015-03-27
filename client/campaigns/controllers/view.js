@@ -9,7 +9,22 @@ angular.module('em-reporting').controller('ViewCampaignCtrl', ['$scope', '$meteo
 		$scope.campaigns = $meteor.collection(Campaigns).subscribe('Campaigns');
 		$scope.campaign = $meteor.object(Campaigns, $stateParams.id, false);
 
-		$scope.clicks = $meteor.collection(Clicks).subscribe('Clicks', $stateParams.id);
-		$scope.opens = $meteor.collection(Opens).subscribe('Opens', $stateParams.id);
+		$scope.clicks = $meteor.collection(Clicks);
+		$scope.opens = $meteor.collection(Opens);
+
+		var clickHandle;
+		$meteor.subscribe('Clicks', $stateParams.id).then(function(handle) {
+			clickHandle = handle;
+		});
+
+		var openHandle;
+		$meteor.subscribe('Opens', $stateParams.id).then(function(handle) {
+			openHandle = handle;
+		});
+
+		$scope.$on('$destroy', function() {
+			clickHandle.stop();
+			openHandle.stop();
+		});
 
 	}]);

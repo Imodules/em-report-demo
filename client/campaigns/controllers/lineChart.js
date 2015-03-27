@@ -32,7 +32,7 @@ function setupLineChart(t) {
 			{
 				type : 'category',
 				boundaryGap : false,
-				data : ['a','b','c','d','e','f','g']
+				data : [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
 			}
 		],
 		yAxis : [
@@ -46,14 +46,14 @@ function setupLineChart(t) {
 				type:'line',
 				smooth:true,
 				itemStyle: {normal: {areaStyle: {type: 'default'}}},
-				data:[10, 12, 21, 54, 260, 830, 710]
+				data:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 			},
 			{
 				name:'Clicks',
 				type:'line',
 				smooth:true,
 				itemStyle: {normal: {areaStyle: {type: 'default'}}},
-				data:[30, 182, 434, 791, 390, 30, 10]
+				data:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 			}
 		]
 	};
@@ -61,3 +61,56 @@ function setupLineChart(t) {
 	// Load data into the ECharts instance
 	chart.setOption(options);
 }
+
+Template.lineChart.helpers({
+	clicks: function () {
+		var data = getData(Clicks.find({}, {sort: {postHour: 1}}));
+		if (options) {
+			options.series[1].data = data.array;
+			chart.setOption(options);
+		}
+
+		return data.total;
+	},
+
+	opens: function () {
+		var data = getData(Opens.find({}, {sort: {postHour: 1}}));
+		if (options) {
+			options.series[0].data = data.array;
+			chart.setOption(options);
+		}
+		return data.total;
+	}
+});
+
+function getData(c) {
+	var data = {total: 0, array: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
+
+	c.forEach(function (d) {
+		data.total++;
+		data.array[d.postHour]++;
+	});
+
+	return data;
+}
+
+//function getData(c) {
+//	var clicks = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+//			opens = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+//
+//	Clicks.find({}, {sort: {postHour: 1}}).forEach(function (click) {
+//		clicks[click.postHour]++;
+//	});
+//
+//	Opens.find({}, {sort: {postHour: 1}}).forEach(function (open) {
+//		opens[open.postHour]++;
+//	});
+//
+//	console.log(opens);
+//
+//	if (options === null) return;
+//	options.series[0].data = opens;
+//	options.series[1].data = clicks;
+//
+//	chart.setOption(options);
+//}
