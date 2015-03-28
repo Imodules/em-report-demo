@@ -77,7 +77,7 @@ function setupLineChart(t) {
 Template.lineChart.helpers({
 	clicks: function () {
 		var data = getData(Clicks.find({}, {sort: {postHour: 1}}));
-		if (options) {
+		if (options && handlesReady()) {
 			options.series[1].data = data.array;
 			chart.setOption(options);
 		}
@@ -87,7 +87,7 @@ Template.lineChart.helpers({
 
 	opens: function () {
 		var data = getData(Opens.find({}, {sort: {postHour: 1}}));
-		if (options) {
+		if (options && handlesReady()) {
 			options.series[0].data = data.array;
 			chart.setOption(options);
 		}
@@ -104,6 +104,10 @@ function getData(c) {
 	});
 
 	return data;
+}
+
+function handlesReady() {
+	return opensHandle.ready() && clicksHandle.ready();
 }
 
 //function getData(c) {
