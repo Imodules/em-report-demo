@@ -4,7 +4,19 @@
 
 'use strict';
 var chart = null,
-		options = null;
+		options = null,
+		clicksHandle = null,
+		opensHandle = null;
+
+Template.lineChart.created = function () {
+	clicksHandle = Meteor.subscribe('Clicks', Session.get('campaignId'));
+	opensHandle = Meteor.subscribe('Opens', Session.get('campaignId'));
+};
+
+Template.lineChart.destroyed = function () {
+	if (clicksHandle) { clicksHandle.stop(); }
+	if (opensHandle) { opensHandle.stop(); }
+};
 
 Template.lineChart.rendered = function () {
 	setupLineChart(this);
