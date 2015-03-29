@@ -17,10 +17,11 @@ var url = 'mongodb://localhost:3001/meteor',
 		Opens,
 		campaignId,
 		startTime,
+		hadOpens = false,
 		runHours = 48;
 
 var minutes = 0,
-		hours = 0;
+		hours = 1;
 
 campaignId = process.argv[2];
 
@@ -121,8 +122,8 @@ function getMessage(type, idx) {
 
 	chartPostDate.minutes(0).seconds(0);
 
-	console.log(timeStamp);
-	console.log(chartPostDate.toDate());
+	//console.log(timeStamp);
+	//console.log(chartPostDate.toDate());
 
 	msg._id = msg.sg_message_id + '_' + tstring;
 	msg.campaignId = campaignId;
@@ -163,11 +164,12 @@ function doit() {
 			isClick = (getRandomId(0, 100) <= clickRates[hours]);
 
 	if (isOpen) {
-		insertMessages('opened', Opens, 10);
+		hadOpens = true;
+		insertMessages('opened', Opens, getRandomId(10, campaign.totalEmails / 100));
 	}
 
-	if (isClick) {
-		insertMessages('click', Clicks, 5);
+	if (hadOpens && isClick) {
+		insertMessages('click', Clicks, getRandomId(2, 100));
 	}
 
 
@@ -175,7 +177,7 @@ function doit() {
 		db.close();
 	} else {
 		// Each second is a minute, this is just a demo see?
-		if (++minutes >= 20) {
+		if (++minutes >= 60) {
 			hours++;
 			minutes = 0;
 		}

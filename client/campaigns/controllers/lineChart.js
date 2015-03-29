@@ -47,6 +47,12 @@ Template.lineChart.rendered = function () {
 	});
 };
 
+Template.lineChart.helpers({
+	isLoaded: function () {
+		return handlesReady();
+	}
+});
+
 function setupLineChart() {
 	if (!chart) { return; }
 
