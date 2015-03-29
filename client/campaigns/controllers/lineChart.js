@@ -8,7 +8,9 @@ var chart = null,
 		campaignsHandle = null,
 		clicksHandle = null,
 		opensHandle = null,
-		createdAt = null;
+		createdAt = null,
+		clicksAutoRun = null,
+		opensAutoRun = null;
 
 Template.lineChart.created = function () {
 	campaignsHandle = Meteor.subscribe('Campaigns');
@@ -20,14 +22,32 @@ Template.lineChart.destroyed = function () {
 	if (campaignsHandle) { campaignsHandle.stop(); }
 	if (clicksHandle) { clicksHandle.stop(); }
 	if (opensHandle) { opensHandle.stop(); }
+
+	if (clicksAutoRun) { clicksAutoRun.stop(); }
+	if (opensAutoRun) { opensAutoRun.stop(); }
 };
 
 Template.lineChart.rendered = function () {
 	chart = echarts.init(this.find('#lineChart'));
-	//setupLineChart(this);
+
+	clicksAutoRun = Tracker.autorun(function () {
+		var data = getData(Clicks.find({}, {sort: {chartPostDate: 1}}));
+		if (options && handlesReady()) {
+			options.series[1].data = data.array;
+			chart.setOption(options);
+		}
+	});
+
+	opensAutoRun = Tracker.autorun(function () {
+		var data = getData(Opens.find({}, {sort: {chartPostDate: 1}}));
+		if (options && handlesReady()) {
+			options.series[0].data = data.array;
+			chart.setOption(options);
+		}
+	});
 };
 
-function setupLineChart(t) {
+function setupLineChart() {
 	if (!chart) { return; }
 
 	var c = Campaigns.findOne({_id: Session.get('campaignId')});
@@ -39,12 +59,10 @@ function setupLineChart(t) {
 			i = 0;
 
 	for (; i<24; i++) {
-		var idxDate = moment(createdAt)
+		var idxDate = moment(createdAt);
 		idxDate.add(i, 'h').minute(0).second(0);
 		xAxisData[i] = idxDate.format('dddd, MMMM Do YYYY, h a');
 	}
-
-	console.log(xAxisData);
 
 	options = {
 		tooltip : {
@@ -91,27 +109,6 @@ function setupLineChart(t) {
 	chart.setOption(options);
 }
 
-Template.lineChart.helpers({
-	clicks: function () {
-		var data = getData(Clicks.find({}, {sort: {chartPostDate: 1}}));
-		if (options && handlesReady()) {
-			options.series[1].data = data.array;
-			chart.setOption(options);
-		}
-
-		return data.total;
-	},
-
-	opens: function () {
-		var data = getData(Opens.find({}, {sort: {chartPostDate: 1}}));
-		if (options && handlesReady()) {
-			options.series[0].data = data.array;
-			chart.setOption(options);
-		}
-		return data.total;
-	}
-});
-
 function getData(c) {
 	if (createdAt === null) {
 		setupLineChart();
@@ -122,8 +119,10 @@ function getData(c) {
 	c.forEach(function (d) {
 		data.total++;
 
+		//console.log(createdAt.toDate());
+		//console.log(d.chartPostDate.toDate());
+
 		var diff = -createdAt.diff(d.chartPostDate, 'hours');
-		console.log(diff);
 
 		data.array[diff]++;
 	});

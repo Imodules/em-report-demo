@@ -16,7 +16,7 @@ var url = 'mongodb://localhost:3001/meteor',
 		Clicks,
 		Opens,
 		campaignId,
-		startStamp = 0,
+		startTime,
 		runHours = 48;
 
 var minutes = 0,
@@ -116,17 +116,19 @@ function getMessage(type, idx) {
 	var msg = messages[msgkeys[type]],
 			tstring = hours + '_' + minutes + '_' + idx;
 
-	var timeStamp = startStamp + (hours * 60 * 60) + (minutes * 60),
-			chartPostDate = new Date(timeStamp);
+	var chartPostDate = moment(startTime).add(hours, 'h').minutes(minutes, 'm'),
+			timeStamp = chartPostDate.unix();
 
-	chartPostDate.setMinutes(0, 0, 0);
-	console.log(chartPostDate);
+	chartPostDate.minutes(0).seconds(0);
+
+	console.log(timeStamp);
+	console.log(chartPostDate.toDate());
 
 	msg._id = msg.sg_message_id + '_' + tstring;
 	msg.campaignId = campaignId;
 	msg.email = 'email_' + tstring + '@example.com';
 	msg.timestamp = timeStamp;
-	msg.chartPostDate = chartPostDate;
+	msg.chartPostDate = chartPostDate.toDate();
 
 	return msg;
 }
@@ -146,7 +148,7 @@ function insertMessages(type, collection, count) {
 		msgs.push(getMessage(type, x));
 	}
 
-	console.log(msgs);
+	//console.log(msgs);
 
 	console.log('Inserting ' + count + ' ' + type);
 	collection.insert(msgs, function (err) {
@@ -204,7 +206,7 @@ MongoClient.connect(url, function(err, _db) {
 				campaign = doc;
 				console.log('Started campaign: ' + campaign.name);
 
-				startStamp = campaign.createdAt.getTime();
+				startTime = moment(campaign.createdAt);
 				doit();
 			});
 
