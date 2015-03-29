@@ -9,3 +9,4 @@ urigo:angular
 angularui:angular-ui-router
 twbs:bootstrap
 fortawesome:fontawesome
+momentjs:moment

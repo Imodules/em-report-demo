@@ -5,31 +5,48 @@
 'use strict';
 var chart = null,
 		options = null,
+		campaignsHandle = null,
 		clicksHandle = null,
-		opensHandle = null;
+		opensHandle = null,
+		createdAt = null;
 
 Template.lineChart.created = function () {
+	campaignsHandle = Meteor.subscribe('Campaigns');
 	clicksHandle = Meteor.subscribe('Clicks', Session.get('campaignId'));
 	opensHandle = Meteor.subscribe('Opens', Session.get('campaignId'));
 };
 
 Template.lineChart.destroyed = function () {
+	if (campaignsHandle) { campaignsHandle.stop(); }
 	if (clicksHandle) { clicksHandle.stop(); }
 	if (opensHandle) { opensHandle.stop(); }
 };
 
 Template.lineChart.rendered = function () {
-	setupLineChart(this);
+	chart = echarts.init(this.find('#lineChart'));
+	//setupLineChart(this);
 };
 
 function setupLineChart(t) {
-	chart = echarts.init(t.find('#lineChart'));
+	if (!chart) { return; }
+
+	var c = Campaigns.findOne({_id: Session.get('campaignId')});
+	if (!c) { return; }
+
+	createdAt = moment(c.createdAt);
+
+	var xAxisData = [],
+			i = 0;
+
+	for (; i<24; i++) {
+		var idxDate = moment(createdAt)
+		idxDate.add(i, 'h').minute(0).second(0);
+		xAxisData[i] = idxDate.format('dddd, MMMM Do YYYY, h a');
+	}
+
+	console.log(xAxisData);
 
 	options = {
-		//title : {
-		//	text: '某楼盘销售情况',
-		//	subtext: '纯属虚构'
-		//},
 		tooltip : {
 			trigger: 'axis'
 		},
@@ -44,7 +61,7 @@ function setupLineChart(t) {
 			{
 				type : 'category',
 				boundaryGap : false,
-				data : [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+				data : xAxisData
 			}
 		],
 		yAxis : [
@@ -76,7 +93,7 @@ function setupLineChart(t) {
 
 Template.lineChart.helpers({
 	clicks: function () {
-		var data = getData(Clicks.find({}, {sort: {postHour: 1}}));
+		var data = getData(Clicks.find({}, {sort: {chartPostDate: 1}}));
 		if (options && handlesReady()) {
 			options.series[1].data = data.array;
 			chart.setOption(options);
@@ -86,7 +103,7 @@ Template.lineChart.helpers({
 	},
 
 	opens: function () {
-		var data = getData(Opens.find({}, {sort: {postHour: 1}}));
+		var data = getData(Opens.find({}, {sort: {chartPostDate: 1}}));
 		if (options && handlesReady()) {
 			options.series[0].data = data.array;
 			chart.setOption(options);
@@ -96,37 +113,24 @@ Template.lineChart.helpers({
 });
 
 function getData(c) {
+	if (createdAt === null) {
+		setupLineChart();
+	}
+
 	var data = {total: 0, array: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
 
 	c.forEach(function (d) {
 		data.total++;
-		data.array[d.postHour]++;
+
+		var diff = -createdAt.diff(d.chartPostDate, 'hours');
+		console.log(diff);
+
+		data.array[diff]++;
 	});
 
 	return data;
 }
 
 function handlesReady() {
-	return opensHandle.ready() && clicksHandle.ready();
+	return campaignsHandle.ready() && opensHandle.ready() && clicksHandle.ready();
 }
-
-//function getData(c) {
-//	var clicks = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-//			opens = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-//
-//	Clicks.find({}, {sort: {postHour: 1}}).forEach(function (click) {
-//		clicks[click.postHour]++;
-//	});
-//
-//	Opens.find({}, {sort: {postHour: 1}}).forEach(function (open) {
-//		opens[open.postHour]++;
-//	});
-//
-//	console.log(opens);
-//
-//	if (options === null) return;
-//	options.series[0].data = opens;
-//	options.series[1].data = clicks;
-//
-//	chart.setOption(options);
-//}

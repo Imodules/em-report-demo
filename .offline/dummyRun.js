@@ -116,17 +116,23 @@ function getMessage(type, idx) {
 	var msg = messages[msgkeys[type]],
 			tstring = hours + '_' + minutes + '_' + idx;
 
+	var timeStamp = startStamp + (hours * 60 * 60) + (minutes * 60),
+			chartPostDate = new Date(timeStamp);
+
+	chartPostDate.setMinutes(0, 0, 0);
+	console.log(chartPostDate);
+
 	msg._id = msg.sg_message_id + '_' + tstring;
 	msg.campaignId = campaignId;
 	msg.email = 'email_' + tstring + '@example.com';
-	msg.timestamp = startStamp + (hours * 60 * 60) + (minutes * 60);
-	msg.postHour = hours;
+	msg.timestamp = timeStamp;
+	msg.chartPostDate = chartPostDate;
 
 	return msg;
 }
 
-var openRates = [0,10,20,30,40.50,60,60,55,50,40,30,20,10,0],
-		clickRates = [0,5,10,15,20,25,30,25,25,20,15,10,10,0];
+var openRates = [0,10,20,30,40.50,60,60,55,50,40,30,30,30,30,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
+		clickRates = [0,5,10,15,20,25,30,25,25,20,15,15,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5];
 
 function getRandomId(min, max) {
 	return Math.floor(Math.random() * max) + min;
