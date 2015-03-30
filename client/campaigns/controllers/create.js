@@ -14,7 +14,8 @@ angular.module('em-reporting').controller('CreateCampaignCtrl', ['$scope', '$met
 				clicks: [],
 				opens: [],
 				spam: [],
-				unsub: []
+				unsub: [],
+				bounces: []
 			};
 
 			$scope.campaigns.save($scope.newCa).then(function (res) {

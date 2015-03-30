@@ -12,8 +12,16 @@
 				<strong style="font-size: 20px;">{{pct}}%</strong> clicked a link ({{total}} people).<br />
 			{{/with}}
 
-			<strong style="font-size: 20px;">0.00%</strong> unsubscribed (0 people).<br />
-			<strong style="font-size: 20px;">0</strong> people marked as spam (0.00%).<br />
+			{{#with unsubData}}
+				<strong style="font-size: 20px;">{{pct}}%</strong> unsubscribed ({{total}} people).<br />
+			{{/with}}
+			{{#with spamData}}
+				<strong style="font-size: 20px;">{{total}}</strong> people marked as spam ({{pct}}%).<br />
+			{{/with}}
+
+			{{#with bounceData}}
+				<strong style="font-size: 20px;">{{total}}</strong> emails were bounced ({{pct}}%).<br />
+			{{/with}}
 		</div>
 	</div>
 </template>

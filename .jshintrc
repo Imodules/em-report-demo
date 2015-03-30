@@ -128,6 +128,9 @@
 		"Campaigns": false,
 		"Clicks": false,
 		"Opens": false,
+		"UnSubs": false,
+		"Spam": false,
+		"Bounces": false,
 		"echarts": false,
 		"moment": false
 	}

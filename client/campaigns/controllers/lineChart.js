@@ -6,22 +6,16 @@
 var chart = null,
 		options = null,
 		campaignsHandle = null,
-		clicksHandle = null,
-		opensHandle = null,
 		createdAt = null,
 		clicksAutoRun = null,
 		opensAutoRun = null;
 
 Template.lineChart.created = function () {
 	campaignsHandle = Meteor.subscribe('Campaigns');
-	//clicksHandle = Meteor.subscribe('Clicks', Session.get('campaignId'));
-	//opensHandle = Meteor.subscribe('Opens', Session.get('campaignId'));
 };
 
 Template.lineChart.destroyed = function () {
 	if (campaignsHandle) { campaignsHandle.stop(); }
-	//if (clicksHandle) { clicksHandle.stop(); }
-	//if (opensHandle) { opensHandle.stop(); }
 
 	if (clicksAutoRun) { clicksAutoRun.stop(); }
 	if (opensAutoRun) { opensAutoRun.stop(); }
@@ -62,6 +56,14 @@ function setupLineChart() {
 			color: ['#4573A7','#AA4644','#89A54E','#71588F','#4298AF','#DB843D','#93A9D0','#D09392','#A99BBE'],
 			tooltip : {
 				trigger: 'axis'
+			},
+			loadingOption: {
+				text: 'Loading...',
+				effect: 'effect'
+			},
+			noDataLoadingOption: {
+				text: 'No Data',
+				effect: 'effect'
 			},
 			legend: {
 				data: ['Opens', 'Clicks']

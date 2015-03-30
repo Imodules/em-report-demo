@@ -16,12 +16,15 @@ var url = 'mongodb://localhost:3001/meteor',
 		campaign,
 		Clicks,
 		Opens,
+		UnSubs,
+		Spam,
+		Bounces,
 		campaignId,
 		startTime,
 		hadOpens = false,
 		runHours = 48;
 
-var minutes = 0,
+var minutes = 60,
 		hours = 0;
 
 campaignId = process.argv[2];
@@ -33,11 +36,11 @@ if (process.argv.length >= 4) {
 var msgkeys = [];
 msgkeys['processed'] = 0;
 msgkeys['delivered'] = 1;
-msgkeys['opened'] = 2;
+msgkeys['open'] = 2;
 msgkeys['click'] = 3;
-msgkeys['bounced'] = 4;
-msgkeys['spam'] = 5;
-msgkeys['unsub'] = 6;
+msgkeys['bounce'] = 4;
+msgkeys['spamreport'] = 5;
+msgkeys['unsubscribe'] = 6;
 
 function getMessage(type, idx) {
 	var messages = [{
@@ -123,10 +126,9 @@ function getMessage(type, idx) {
 
 	chartPostDate.minutes(0).seconds(0);
 
-	//console.log(timeStamp);
-	//console.log(chartPostDate.toDate());
+	msg._id = type + '_' + tstring;
+	console.log(msg._id);
 
-	msg._id = msg.sg_message_id + '_' + tstring;
 	msg.campaignId = campaignId;
 	msg.email = 'email_' + tstring + '@example.com';
 	msg.timestamp = timeStamp;
@@ -147,6 +149,9 @@ function insertMessages(type, collection, count) {
 			msg,// Last one in loop will be used to get the time.
 			clicks = 0,
 			opens = 0,
+			unsub = 0,
+			spam = 0,
+			bounces = 0,
 			x = 0;
 
 	for(; x<count; x++) {
@@ -156,8 +161,14 @@ function insertMessages(type, collection, count) {
 
 	if (type === 'click') {
 		clicks += count;
-	} else if (type === 'opened') {
+	} else if (type === 'open') {
 		opens += count;
+	} else if (type === 'unsubscribe') {
+		unsub += count;
+	} else if (type === 'spamreport') {
+		spam += count;
+	} else if (type === 'bounce') {
+		bounces += count;
 	}
 
 	//console.log(msgs);
@@ -167,18 +178,18 @@ function insertMessages(type, collection, count) {
 		assert.equal(null, err);
 
 		colCampaigns.findOne({_id: campaignId}, function (err, doc) {
-			// If I haven't recorded the time yet then record that.
-			if (doc.stats.hours.length === 0 || doc.stats.hours[doc.stats.hours.length - 1].getTime() !== msg.chartPostDate.getTime()) {
-				console.log('Adding new time hour');
-				colCampaigns.update({_id: campaignId}, {$addToSet: {'stats.hours': msg.chartPostDate},
-					$push: {'stats.clicks': clicks, 'stats.opens': opens}}, function () {});
-			} else {
-				// already exists, just increment
-				console.log('Incrementing current hour');
-				doc.stats.clicks[doc.stats.clicks.length - 1] += clicks;
-				doc.stats.opens[doc.stats.opens.length - 1] += opens;
-				colCampaigns.update({_id: campaignId}, {$set: {'stats.clicks': doc.stats.clicks, 'stats.opens': doc.stats.opens}}, function () {});
-			}
+			doc.stats.clicks[doc.stats.clicks.length - 1] += clicks;
+			doc.stats.opens[doc.stats.opens.length - 1] += opens;
+			doc.stats.unsub[doc.stats.unsub.length - 1] += unsub;
+			doc.stats.spam[doc.stats.spam.length - 1] += spam;
+			doc.stats.bounces[doc.stats.bounces.length - 1] += bounces;
+			colCampaigns.update({_id: campaignId}, {$set: {
+				'stats.clicks': doc.stats.clicks,
+				'stats.opens': doc.stats.opens,
+				'stats.unsub': doc.stats.unsub,
+				'stats.spam': doc.stats.spam,
+				'stats.bounces': doc.stats.bounces
+			}}, function () {});
 		});
 	});
 
@@ -192,11 +203,23 @@ function doit() {
 
 	if (isOpen) {
 		hadOpens = true;
-		insertMessages('opened', Opens, getRandomId(10, campaign.totalEmails / 500));
+		insertMessages('open', Opens, getRandomId(10, campaign.totalEmails / 500));
 	}
 
 	if (hadOpens && isClick) {
 		insertMessages('click', Clicks, getRandomId(2, 100));
+	}
+
+	if (hadOpens && getRandomId(0, 100) <= 10) {
+		insertMessages('unsubscribe', UnSubs, 1);
+	}
+
+	if (hadOpens && getRandomId(0, 100) <= 10) {
+		insertMessages('bounce', Bounces, 3);
+	}
+
+	if (hadOpens && getRandomId(0, 100) <= 5) {
+		insertMessages('spamreport', Spam, 1);
 	}
 
 
@@ -207,6 +230,14 @@ function doit() {
 		if (++minutes >= 30) {
 			hours++;
 			minutes = 0;
+
+			colCampaigns.findOne({_id: campaignId}, function (err, doc) {
+				var newDate = moment(startTime);
+				newDate.add(hours, 'hours');
+
+				colCampaigns.update({_id: campaignId}, {$addToSet: {'stats.hours': newDate.toDate()},
+					$push: {'stats.clicks': 0, 'stats.opens': 0, 'stats.unsub': 0, 'stats.spam': 0, 'stats.bounces': 0}}, function () {});
+			});
 		}
 
 		setTimeout(doit, 1000);
@@ -221,6 +252,9 @@ MongoClient.connect(url, function(err, _db) {
 	colCampaigns = db.collection('Campaigns');
 	Clicks = db.collection('Clicks');
 	Opens = db.collection('Opens');
+	UnSubs = db.collection('UnSubs');
+	Spam = db.collection('Spam');
+	Bounces = db.collection('Bounces');
 
 	Clicks.remove({campaignId: campaignId}, function () {
 		Opens.remove({campaignId: campaignId}, function () {
@@ -237,8 +271,17 @@ MongoClient.connect(url, function(err, _db) {
 
 				startTime = moment(campaign.createdAt);
 
-				colCampaigns.update({_id: campaignId}, {$set: {'stats.hours': [], 'stats.clicks': [], 'stats.opens': []}}, function () {
-					doit();
+				colCampaigns.update({_id: campaignId}, {$set: {'stats.hours': [], 'stats.clicks': [], 'stats.opens': [],
+				'stats.unsub': [], 'stats.spam': [], 'stats.bounces': []}}, function () {
+
+					var newDate = moment(startTime);
+					newDate.minutes(0).seconds(0);
+
+					colCampaigns.update({_id: campaignId}, {$addToSet: {'stats.hours': newDate.toDate()},
+						$push: {'stats.clicks': 0, 'stats.opens': 0, 'stats.unsub': 0, 'stats.spam': 0, 'stats.bounces': 0}}, function () {
+						doit();
+					});
+
 				});
 
 			});

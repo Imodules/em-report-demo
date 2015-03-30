@@ -56,6 +56,66 @@ Template.opensPieChart.helpers({
 		}
 
 		return ret;
+	},
+
+	unsubData: function () {
+		var ret = {
+			pct: 0,
+			total: 0
+		};
+
+		var c = Campaigns.findOne({_id: Session.get('campaignId')}),
+				i=0;
+
+		if (c) {
+			for (; i < c.stats.unsub.length; i++) {
+				ret.total += c.stats.unsub[i];
+			}
+
+			ret.pct = ((ret.total / c.totalEmails) * 100).toFixed(2);
+		}
+
+		return ret;
+	},
+
+	spamData: function () {
+		var ret = {
+			pct: 0,
+			total: 0
+		};
+
+		var c = Campaigns.findOne({_id: Session.get('campaignId')}),
+				i=0;
+
+		if (c) {
+			for (; i < c.stats.spam.length; i++) {
+				ret.total += c.stats.spam[i];
+			}
+
+			ret.pct = ((ret.total / c.totalEmails) * 100).toFixed(2);
+		}
+
+		return ret;
+	},
+
+	bounceData: function () {
+		var ret = {
+			pct: 0,
+			total: 0
+		};
+
+		var c = Campaigns.findOne({_id: Session.get('campaignId')}),
+				i=0;
+
+		if (c) {
+			for (; i < c.stats.spam.length; i++) {
+				ret.total += c.stats.bounces[i];
+			}
+
+			ret.pct = ((ret.total / c.totalEmails) * 100).toFixed(2);
+		}
+
+		return ret;
 	}
 });
 
@@ -96,14 +156,17 @@ function setupPieChart() {
 	}
 
 	var totalOpens = 0,
+			bounces = 0,
 			i = 0;
 
 	for (; i < c.stats.opens.length; i++) {
 		totalOpens += c.stats.opens[i];
+		bounces += c.stats.bounces[i];
 	}
 
 	options.series[0].data[0].value = totalOpens;
-	options.series[0].data[2].value = c.totalEmails - totalOpens;
+	options.series[0].data[1].value = bounces;
+	options.series[0].data[2].value = c.totalEmails - totalOpens - bounces;
 
 	chart.setOption(options);
 }
