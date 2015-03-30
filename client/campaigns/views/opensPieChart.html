@@ -6,21 +6,21 @@
 
 		<div class="col-xs-12 col-sm-6">
 			{{#with openData}}
-				<strong style="font-size: 20px;">{{pct}}%</strong> of all recipients opened so far ({{total}} people).<br />
+				<h4>{{pct}}% <small>of all recipients opened so far ({{total}} people).</small></h4>
 			{{/with}}
 			{{#with clickData}}
-				<strong style="font-size: 20px;">{{pct}}%</strong> clicked a link ({{total}} people).<br />
+				<h4>{{pct}}% <small>clicked a link ({{total}} people).</small></h4>
 			{{/with}}
 
 			{{#with unsubData}}
-				<strong style="font-size: 20px;">{{pct}}%</strong> unsubscribed ({{total}} people).<br />
+				<h4>{{pct}}% <small>unsubscribed ({{total}} people).</small></h4>
 			{{/with}}
 			{{#with spamData}}
-				<strong style="font-size: 20px;">{{total}}</strong> people marked as spam ({{pct}}%).<br />
+				<h4>{{total}} <small>people marked as spam ({{pct}}%).</small></h4>
 			{{/with}}
 
 			{{#with bounceData}}
-				<strong style="font-size: 20px;">{{total}}</strong> emails were bounced ({{pct}}%).<br />
+				<h4>{{total}} <small>emails were bounced ({{pct}}%).</small></h4>
 			{{/with}}
 		</div>
 	</div>
