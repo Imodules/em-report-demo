@@ -132,19 +132,19 @@ function setupPieChart() {
 				trigger: 'item',
 				formatter: "{a} <br/>{b} : {c} ({d}%)"
 			},
-			legend: {
-				orient: 'vertical',
-				x: 'left',
-				data: ['Opens', 'Bounced', 'Not Opened']
-			},
+			//legend: {
+			//	orient: 'vertical',
+			//	x: 'left',
+			//	data: ['Opens', 'Bounced', 'Not Opened']
+			//},
 			calculable: true,
 			color: ['#89A54E','#AA4644','#4573A7','#71588F','#4298AF','#DB843D','#93A9D0','#D09392','#A99BBE'],
 			series: [
 				{
 					name: 'Opens',
 					type: 'pie',
-					radius: '55%',
-					center: ['50%', '60%'],
+					//radius: '55%',
+					//center: ['50%', '60%'],
 					data: [
 						{value: 0, name: 'Opens'},
 						{value: 0, name: 'Bounced'},
