@@ -22,7 +22,7 @@ Template.opensPieChart.helpers({
 		var ret = {
 			pct: 0,
 			total: 0
-		};
+				}, bounces = 0;
 
 		var c = Campaigns.findOne({_id: Session.get('campaignId')}),
 				i=0;
@@ -30,9 +30,10 @@ Template.opensPieChart.helpers({
 		if (c) {
 			for (; i < c.stats.opens.length; i++) {
 				ret.total += c.stats.opens[i];
+				bounces += c.stats.bounces[i];
 			}
 
-			ret.pct = ((ret.total / c.totalEmails) * 100).toFixed(2);
+			ret.pct = ((ret.total /(c.totalEmails - bounces)) * 100).toFixed(2);
 		}
 
 		return ret;
@@ -166,7 +167,7 @@ function setupPieChart() {
 
 	options.series[0].data[0].value = totalOpens;
 	options.series[0].data[1].value = bounces;
-	options.series[0].data[2].value = c.totalEmails - totalOpens - bounces;
+	options.series[0].data[2].value = c.totalEmails - (totalOpens - bounces);
 
 	chart.setOption(options);
 }
