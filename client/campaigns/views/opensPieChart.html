@@ -6,11 +6,14 @@
 
 		<div class="col-xs-12 col-sm-6">
 			{{#with openData}}
-				<strong style="font-size: 20px;">{{pct}} %</strong> of all recipients opened so far.<br />
+				<strong style="font-size: 20px;">{{pct}}%</strong> of all recipients opened so far ({{total}} people).<br />
 			{{/with}}
 			{{#with clickData}}
-				<strong style="font-size: 20px;">{{pct}} %</strong> clicked a link ({{total}} people).<br />
+				<strong style="font-size: 20px;">{{pct}}%</strong> clicked a link ({{total}} people).<br />
 			{{/with}}
+
+			<strong style="font-size: 20px;">0.00%</strong> unsubscribed (0 people).<br />
+			<strong style="font-size: 20px;">0</strong> people marked as spam (0.00%).<br />
 		</div>
 	</div>
 </template>

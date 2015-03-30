@@ -3,10 +3,10 @@
  */
 
 'use strict';
-Meteor.publish('Opens', function (campaignId) {
-	return Opens.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1, chartPostDate: 1}});
-});
-
-Meteor.publish('Clicks', function (campaignId) {
-	return Clicks.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1, chartPostDate: 1}});
-});
+//Meteor.publish('Opens', function (campaignId) {
+//	return Opens.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1, chartPostDate: 1}});
+//});
+//
+//Meteor.publish('Clicks', function (campaignId) {
+//	return Clicks.find({campaignId: campaignId}, {fields: {campaignId: 1, timestamp: 1, chartPostDate: 1}});
+//});

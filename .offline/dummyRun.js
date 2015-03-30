@@ -12,6 +12,7 @@ var url = 'mongodb://localhost:3001/meteor',
 
 		],
 		db,
+		colCampaigns,
 		campaign,
 		Clicks,
 		Opens,
@@ -21,7 +22,7 @@ var url = 'mongodb://localhost:3001/meteor',
 		runHours = 48;
 
 var minutes = 0,
-		hours = 1;
+		hours = 0;
 
 campaignId = process.argv[2];
 
@@ -134,7 +135,7 @@ function getMessage(type, idx) {
 	return msg;
 }
 
-var openRates = [0,10,20,30,40.50,60,60,55,50,40,30,30,30,30,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
+var openRates = [0,10,20,30,60,60,30,30,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
 		clickRates = [0,5,10,15,20,25,30,25,25,20,15,15,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5];
 
 function getRandomId(min, max) {
@@ -143,10 +144,20 @@ function getRandomId(min, max) {
 
 function insertMessages(type, collection, count) {
 	var msgs = [],
+			msg,// Last one in loop will be used to get the time.
+			clicks = 0,
+			opens = 0,
 			x = 0;
 
 	for(; x<count; x++) {
-		msgs.push(getMessage(type, x));
+		msg = getMessage(type, x);
+		msgs.push(msg);
+	}
+
+	if (type === 'click') {
+		clicks += count;
+	} else if (type === 'opened') {
+		opens += count;
 	}
 
 	//console.log(msgs);
@@ -154,7 +165,23 @@ function insertMessages(type, collection, count) {
 	console.log('Inserting ' + count + ' ' + type);
 	collection.insert(msgs, function (err) {
 		assert.equal(null, err);
+
+		colCampaigns.findOne({_id: campaignId}, function (err, doc) {
+			// If I haven't recorded the time yet then record that.
+			if (doc.stats.hours.length === 0 || doc.stats.hours[doc.stats.hours.length - 1].getTime() !== msg.chartPostDate.getTime()) {
+				console.log('Adding new time hour');
+				colCampaigns.update({_id: campaignId}, {$addToSet: {'stats.hours': msg.chartPostDate},
+					$push: {'stats.clicks': clicks, 'stats.opens': opens}}, function () {});
+			} else {
+				// already exists, just increment
+				console.log('Incrementing current hour');
+				doc.stats.clicks[doc.stats.clicks.length - 1] += clicks;
+				doc.stats.opens[doc.stats.opens.length - 1] += opens;
+				colCampaigns.update({_id: campaignId}, {$set: {'stats.clicks': doc.stats.clicks, 'stats.opens': doc.stats.opens}}, function () {});
+			}
+		});
 	});
+
 }
 
 function doit() {
@@ -165,7 +192,7 @@ function doit() {
 
 	if (isOpen) {
 		hadOpens = true;
-		insertMessages('opened', Opens, getRandomId(10, campaign.totalEmails / 100));
+		insertMessages('opened', Opens, getRandomId(10, campaign.totalEmails / 500));
 	}
 
 	if (hadOpens && isClick) {
@@ -177,7 +204,7 @@ function doit() {
 		db.close();
 	} else {
 		// Each second is a minute, this is just a demo see?
-		if (++minutes >= 60) {
+		if (++minutes >= 30) {
 			hours++;
 			minutes = 0;
 		}
@@ -191,7 +218,7 @@ MongoClient.connect(url, function(err, _db) {
 	console.log('Connected correctly to server');
 	db = _db;
 
-	var campaigns = db.collection('Campaigns');
+	colCampaigns = db.collection('Campaigns');
 	Clicks = db.collection('Clicks');
 	Opens = db.collection('Opens');
 
@@ -199,7 +226,7 @@ MongoClient.connect(url, function(err, _db) {
 		Opens.remove({campaignId: campaignId}, function () {
 
 			console.log('Getting campaign for id: ' + campaignId);
-			campaigns.findOne({_id: campaignId}, function (err, doc) {
+			colCampaigns.findOne({_id: campaignId}, function (err, doc) {
 				if (err || !doc) {
 					db.close();
 					throw new Error('Failed to find campaign for id: ' + campaignId);
@@ -209,7 +236,11 @@ MongoClient.connect(url, function(err, _db) {
 				console.log('Started campaign: ' + campaign.name);
 
 				startTime = moment(campaign.createdAt);
-				doit();
+
+				colCampaigns.update({_id: campaignId}, {$set: {'stats.hours': [], 'stats.clicks': [], 'stats.opens': []}}, function () {
+					doit();
+				});
+
 			});
 
 		});
